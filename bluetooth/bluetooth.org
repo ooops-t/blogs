@@ -1,0 +1,137 @@
+* 蓝牙模块 (AIC8800) 驱动移植及使用
+
+** 驱动移植
+
+*** 下载
+  下载地址: [[https://github.com/radxa-pkg/aic8800][AIC8800 linux driver]]
+
+
+*** 编译
+
+#+begin_src bash
+  export CONFIG_AIC_FW_PATH=/lib/firmware/aic8800D80
+  make -C src/SDIO/driver_fw/driver/aic8800 # 如果需要编译其他接口的驱动, 使用其他的接口目录即可.
+  cp -arpf src/SDIO/driver_fw/fw/aic8800D80 /lib/firmware/ # 拷贝固件
+#+end_src
+
+
+*** 依赖的内核配置
+
+#+begin_src bash
+  CONFIG_NET=y
+  CONFIG_WIRELESS=y
+  CONFIG_CFG80211=y
+  CONFIG_BT=y # Bluetooth
+  CONFIG_BT_HCIUART=y # usart interface for BT.
+  CONFIG_BT_HCIUART_H4=y
+#+end_src
+
+
+*** 加载驱动
+
+#+begin_src bash
+  modprobe aic8800_fdrv
+#+end_src
+
+
+** 使用 
+
+*** WiFi
+
+**** 准备配置文件 */ect/wpa_supplicant*
+
+#+begin_src bash
+  ctrl_interface=/var/run/wpa_supplicant
+  update_config=1
+
+  network={
+    key_mgmt=WPA-PSK
+  }
+#+end_src
+
+**** 连接 WiFi
+
+#+begin_src bash
+  wpa_supplicant -B -i <wifi网卡名> -c /etc/wpa_supplicant.conf
+  wpa_cli scan # scan wifi
+  wpa_cli scan_result # show results
+
+  wpa_cli  #进入交互界面
+  # wpa_cli v2.10
+  # Copyright (c) 2004-2022, Jouni Malinen <j@w1.fi> and contributors
+  # 
+  # This software may be distributed under the terms of the BSD license.
+  # See README for more details.
+  # 
+  # 
+  # Selected interface 'wlan0'
+  # 
+  # Interactive mode
+  # 
+  # > add_network                              #添加一个网络
+  # 1
+  # > set_network 1 ssid "<需要连接的Wifi名称>"  #设置wifi的ssid
+  # ok
+  # > set_network 1 psk "<所连接wifi的密码>"     #设置wifi密码  注意：wifi密码仅支持WPA加密方式
+  # ok 
+  # > enable_network 1                         #尝试连接wifi 1
+  # ok
+  # > save_config                              #保存设置
+  # ok
+  # > quit
+
+  udhcpc -i wlan0                         #给无线网卡wlan0分配ip地址
+  # udhcpc: started, v1.35.0
+  # udhcpc: broadcasting discover
+  # udhcpc: broadcasting select for 192.168.1.100, server 192.168.1.1
+  # udhcpc: lease of 192.168.1.100 obtained from 192.168.1.1, lease time 7200
+  # deleting routers
+  # adding dns 172.19.62.11
+  # adding dns 172.19.62.12
+#+end_src
+
+*** BT
+
+**** 探测蓝牙设备
+
+#+begin_src bash
+  /usr/bin/hciattach -s 1500000 /dev/ttyAS1 any 1500000 flow nosleep
+  hciconfig -a # 查看设备信息
+  # hci0:   Type: Primary  Bus: UART
+  #         BD Address: 78:22:88:E9:A5:40  ACL MTU: 1021:9  SCO MTU: 255:4
+  #         UP RUNNING PSCAN 
+  #         RX bytes:59012 acl:8 sco:0 events:1544 errors:0
+  #         TX bytes:1561 acl:9 sco:0 commands:106 errors:0
+  #         Features: 0xbf 0x2e 0x4d 0xfe 0xd8 0x3f 0x7b 0x87
+  #         Packet type: DM1 DM3 DM5 DH1 DH3 DH5 HV1 HV3 
+  #         Link policy: RSWITCH SNIFF 
+  #         Link mode: PERIPHERAL ACCEPT 
+  #         Name: 'BlueZ 5.72'
+  #         Class: 0x000000
+  #         Service Classes: Unspecified
+  #         Device Class: Miscellaneous, 
+  #         HCI Version: 5.4 (0xd)  Revision: 0xb
+  #         LMP Version: 5.4 (0xd)  Subversion: 0xb
+  #         Manufacturer: not assigned (2875)
+#+end_src
+
+**** 蓝牙设备操作
+
+***** 启动 *bluetoothd* 服务
+
+#+begin_src bash
+  /usr/libexec/bluetooth/bluetoothd -n &
+#+end_src
+
+***** 进入 *bluetoolthctl* 操作界面进行相关操作
+
+#+begin_src bash
+  bluetoothctl
+  # hci0 new_settings: powered connectable bondable ssp br/edr le secure-conn 
+  # Agent registered
+  # [CHG] Controller 78:22:88:E9:A5:40 Pairable: yes
+  # [bluetooth]# power on # 开启电源
+  # [bluetooth]# scan on # 扫描设备
+  # [bluetooth]# scan off # 停止扫描
+  # [bluetooth]# discoverable on # 进入可被发现模式
+#+end_src

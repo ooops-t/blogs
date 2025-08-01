@@ -5,9 +5,13 @@
 * RKISP 简介
 
 ISP 包含了一系列的图像处理算法模块，主要包含：暗电流矫正、坏点矫正、3A、HDR、镜头阴影矫正、镜头畸形矫正、3DLUT、
-去噪（包含 RAW 域去噪、多帧降噪、颜色去燥等）、锐化等。
+去噪（包含 RAW 域去噪、多帧降噪、颜色去燥等）、锐化等。由于不同传感器的差异以及拍摄环境的多样性，传感器输出的原始
+数据和人们预期的图像有一定差距，因此 ISP 就起到两相当重要的作用。例如：夜间光照不足、大雾、沙尘等，均会使采集的图
+像造成影响，存在成像模糊、噪声污染及曝光不均等问题，而经过 ISP 图像处理的图像会有明显的优化。
 
-ISP 包含硬件算法实现及软件逻辑控制部分，RKAIQ 即为软件逻辑控制部分的实现。
+** RKISP 和 RKAIQ
+
+RKISP 包含硬件算法实现及软件逻辑控制两个部分。RKAIQ 为软件逻辑控制部分的实现。
 
 RKAIQ 软件模块主要实现的功能为：从 ISP 驱动获取图像统计，结合 IQ Tuning 参数，使用一系列算法计算出新的 ISP、Sensor
 等硬件参数，不断迭代该过程，最终达到最优的图像效果。
@@ -35,6 +39,23 @@ Sensor 输出数据流给 ISP HW，ISP HW 再输出经过一系列图像处理�
 #+ATTR_HTML: :align center
 #+ATTR_ORG: :align center
 [[./imgs/rkisp-hardware.png]]
+
+
+** 硬件通路框图
+
+#+ATTR_HTML: :align center
+#+ATTR_ORG: :align center
+[[./imgs/rk3588-hardware.png]]
+
+** 多摄像头软件通路
+
+单路硬件 ISP 最多支持 4 路复用，ISP 复用情况支持分辨率如下:
+- 2 路复用：最大分辨率为 3840x2160
+- 3 路或 4 路复用：最大分辨率为 2560x1536
+
+#+ATTR_HTML: :align center
+#+ATTR_ORG: :align center
+[[./imgs/mulitcamera.png]]
 
 
 * 设备端使能 rkisp
@@ -247,4 +268,6 @@ RKAIQ 主要提供两个工具， ~rkaiq_tool_server~ 和 ~rkaiq_3A_server~ 。�
 - [[https://opensource.rock-chips.com/wiki_Rockchip-isp1]]
 - [[https://www.cnblogs.com/yikoulinux/p/17099867.html]]
 - [[https://doc.embedfire.com/linux/rk356x/quick_start/zh/latest/quick_start/isp/isp.html]]
+- [[https://www.cnblogs.com/Tronlong818/p/18165948]]
+- [[https://zhuanlan.zhihu.com/p/634201418]]
 

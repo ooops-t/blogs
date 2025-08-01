@@ -274,4 +274,5 @@ RKAIQ 主要提供两个工具， ~rkaiq_tool_server~ 和 ~rkaiq_3A_server~ 。�
 - [[https://www.cnblogs.com/Tronlong818/p/18165948]]
 - [[https://zhuanlan.zhihu.com/p/634201418]]
 - [[https://wiki.t-firefly.com/en/ROC-RK3588S-PC/usage_camera.html]]
+- [[https://dl.vamrs.com/products/rock960/docs/sw/Rockchip%C2%A0Linux%20Camera%C2%A0Developer%20Guide%20V1.1.pdf]]
   

@@ -108,6 +108,7 @@ RKNPU2 Runtime 中有很多例程，这里使用 yolov5 模型进行演示。例
 #+ATTR_ORG: :align center
 [[./imgs/out.jpg]]
 
+
 * 查看 rknpu 运行信息
 
 #+begin_src shell

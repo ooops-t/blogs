@@ -1,0 +1,249 @@
+#+title: Rockchip ISP 使用教程
+#+author: taocheng
+#+date: <2025-07-31 Thu>
+
+* RKISP 简介
+
+ISP 包含了一系列的图像处理算法模块，主要包含：暗电流矫正、坏点矫正、3A、HDR、镜头阴影矫正、镜头畸形矫正、3DLUT、
+去噪（包含 RAW 域去噪、多帧降噪、颜色去燥等）、锐化等。
+
+ISP 包含硬件算法实现及软件逻辑控制部分，RKAIQ 即为软件逻辑控制部分的实现。
+
+RKAIQ 软件模块主要实现的功能为：从 ISP 驱动获取图像统计，结合 IQ Tuning 参数，使用一系列算法计算出新的 ISP、Sensor
+等硬件参数，不断迭代该过程，最终达到最优的图像效果。
+
+
+** RKISP 系统框图
+
+Sensor 输出数据流给 ISP HW，ISP HW 再输出经过一系列图像处理算法后的图像。RKAIQ 不断的从 ISP HW 获取统计数据，并经过
+3A 等算法生成新的参数反馈给各硬件模块。
+
+#+ATTR_HTML: :align center
+#+ATTR_ORG: :align center
+[[./imgs/rkisp-system.png]]
+
+
+** RKISP 软件架构框图
+
+#+ATTR_HTML: :align center
+#+ATTR_ORG: :align center
+[[./imgs/rkisp-sofware.png]]
+
+
+** RKISP 硬件链接框图
+
+#+ATTR_HTML: :align center
+#+ATTR_ORG: :align center
+[[./imgs/rkisp-hardware.png]]
+
+
+* 设备端使能 rkisp
+
+
+** 内核驱动
+
+#+begin_src shell
+  CONFIG_PHY_ROCKCHIP_CSI2_DPHY=y
+  CONFIG_VIDEO_ROCKCHIP_CIF=y
+  CONFIG_VIDEO_ROCKCHIP_ISP=y
+  CONFIG_VIDEO_ROCKCHIP_ISP_VERSION_V30=y
+  CONFIG_VIDEO_ROCKCHIP_ISPP=y
+  CONFIG_VIDEO_ROCKCHIP_ISPP_VERSION_V20=y
+#+end_src
+
+
+** 设备树
+
+#+begin_src dts
+  &rkcif {
+          status = "okay";
+  };
+
+  &rkcif_mmu {
+          status = "okay";
+  };
+
+  &csi2_dphy0_hw {
+  	status = "okay";
+  };
+
+  &csi2_dphy1 {
+  	status = "disabled";
+  	ports {
+  		#address-cells = <1>;
+  		#size-cells = <0>;
+  		port@0 {
+  			reg = <0>;
+  			#address-cells = <1>;
+  			#size-cells = <0>;
+
+  			mipidphy1_in_ucam2: endpoint@2 {
+  				reg = <2>;
+  				remote-endpoint = <&og02b1b_1_out1>;
+  				data-lanes = <1 2>;
+  			};
+  		};
+
+  		port@1 {
+  		        reg = <1>;
+  		        #address-cells = <1>;
+  		        #size-cells = <0>;
+  		        csidphy0_out: endpoint@0 {
+  		                reg = <0>;
+  		                remote-endpoint = <&mipi2_csi2_input>;
+  		        };
+  		};
+  	};
+  };
+
+  &i2c1{
+  	status = "okay";
+
+  	og02b1b: og02b1b@60 {
+  		compatible = "ovti,og02b1b";
+  		status = "disabled";
+  		reg = <0x60>;
+  		clocks = <&cru CLK_MIPI_CAMARAOUT_M1>;
+  		clock-names = "xvclk";
+  		pinctrl-names = "default";
+  		pinctrl-0 = <&mipim1_camera1_clk>;
+  		power-domains = <&power RK3588_PD_VI>;
+  		reset-gpios = <&gpio3 RK_PC1 GPIO_ACTIVE_LOW>;
+  		rockchip,camera-module-index = <0>;
+  		rockchip,camera-module-facing = "back";
+  		rockchip,camera-module-name = "og02b1b";
+  		rockchip,camera-module-lens-name = "hcfa-og02b1b-sensor";
+  		port {
+  			og02b1b_1_out1: endpoint {
+  				remote-endpoint = <&mipidphy1_in_ucam2>;
+  				data-lanes = <1 2>;
+  			};
+  		};
+  	};
+  };
+
+  &mipi2_csi2 {
+  	status = "disabled";
+  	ports {
+  		#address-cells = <1>;
+  		#size-cells = <0>;
+  		port@0 {
+  			reg = <0>;
+  			#address-cells = <1>;
+  			#size-cells = <0>;
+  			mipi2_csi2_input: endpoint@1 {
+  				reg = <1>;
+  				remote-endpoint = <&csidphy0_out>;
+  			};
+  		};
+  		port@1 {
+  			reg = <1>;
+  			#address-cells = <1>;
+  			#size-cells = <0>;
+  			mipi2_csi2_output: endpoint@0 {
+  				reg = <0>;
+  				remote-endpoint = <&cif_mipi_in2>;
+  			};
+  		};
+  	};
+  };
+
+  &rkcif_mipi_lvds2 {
+  	status = "disabled";
+  	port {
+  		cif_mipi_in2: endpoint {
+  			remote-endpoint = <&mipi2_csi2_output>;
+  		};
+  	};
+  };
+
+  &rkcif_mipi_lvds2_sditf {
+  	status = "disabled";
+  	port {
+  		mipi2_lvds_sditf: endpoint {
+  			remote-endpoint = <&isp0_vir0>;
+  		};
+  	};
+  };
+
+  &rkisp0_vir0 {
+  	status = "disabled";
+  	port {
+  		#address-cells = <1>;
+  		#size-cells = <0>;
+  		isp0_vir0: endpoint@0 {
+  			reg = <0>;
+  			remote-endpoint = <&mipi2_lvds_sditf>;
+  		};
+  	};
+  };
+#+end_src
+
+
+** 验证
+
+#+begin_src shell
+  dmesg | grep og02b1b # 摄像头 Sensor
+  # [   29.149878] og02b1b 1-0060: driver version: 00.01.05
+  # [   29.170266] og02b1b 1-0060: Detected OG02B1B 3f 02 0b sensor
+  # [   29.204766] og02b1b 1-0060: Consider updating driver og02b1b to match on endpoints
+  # [   29.205466] rockchip-csi2-dphy csi2-dphy1: dphy1 matches m00_b_og02b1b 1-0060:bus type 5
+  dmesg | grep dphy # Rockchip 的 csi2 的 phy
+  # [   28.557481] rockchip-csi2-dphy-hw fedc0000.csi2-dphy0-hw: csi2 dphy hw probe successfully!
+  # [   28.558352] rockchip-csi2-dphy-hw fedc8000.csi2-dphy1-hw: csi2 dphy hw probe successfully!
+  # [   29.205466] rockchip-csi2-dphy csi2-dphy1: dphy1 matches m00_b_og02b1b 1-0060:bus type 5
+  # [   29.208028] rockchip-csi2-dphy csi2-dphy1: csi2 dphy1 probe successfully!
+  dmesg | grep rkcif # Rockchip 的摄像头接口
+  # [   28.931171] rkcif rkcif-mipi-lvds2: rkcif driver version: v00.02.00
+  # [   28.932749] rkcif rkcif-mipi-lvds2: attach to cif hw node
+  # [   29.016251] rockchip-mipi-csi2: probe success, v4l2_dev:rkcif-mipi-lvds2!
+  # [   29.207247] rkcif-mipi-lvds2: Async subdev notifier completed
+  dmesg | grep rkisp # Rockchip 的 rkisp
+  # [   29.028228] rkisp rkisp0-vir0: rkisp driver version: v02.04.00
+  # [   29.029315] rkisp rkisp0-vir0: No memory-region-thunderboot specified
+  # [   29.208531] rkisp0-vir0: Async subdev notifier completed
+  # [   29.496732] rkisp rkisp0-vir0: clear unready subdev num: 0
+#+end_src
+
+* RKAIQ 相关工具
+
+
+RKAIQ 为 Rockchip 提供的 ISP 参数调试工具。在 Rockchip 官方 SDK 中有提供。此处采用第三方开发板厂商上传的版本，
+下载链接为 =https://gitlab.com/khadas-edge2/external_camera_engine_rkaiq=
+
+** 编译
+
+#+begin_src shell
+  cmake -DARCH=aarch64 \
+        -DCMAKE_BUILD_TYPE=MinSizeRel \
+        -DCMAKE_SKIP_RPATH=TRUE \
+        -DCMAKE_EXPORT_COMPILE_COMMANDS=YES \
+        -DRKAIQ_TARGET_SOC=rk3588 \
+        -DISP_HW_VERSION=-DISP_HW_V30 \
+        -DRKAIQ_BUILD_BINARY_IQ=OFF \
+        -DRKAIQ_USE_RAWSTREAM_LIB=OFF \
+        -DRKAIQ_HAVE_FAKECAM=ON \
+        -DRKAIQ_ENABLE_AF=ON \
+        -B build .
+#+end_src
+
+** 运行测试
+
+RKAIQ 主要提供两个工具， ~rkaiq_tool_server~ 和 ~rkaiq_3A_server~ 。两个工具的使用方法参考官方相关文档。
+
+*** =rkaiq_tool_server=
+
+该工具的主要的作用是在线调试 ISP 参数。
+
+
+*** =rkaiq_3A_server=
+
+该工具的主要的作用是加载 ISP 参数。
+
+
+* 参考文献
+
+- [[https://opensource.rock-chips.com/wiki_Rockchip-isp1]]
+- [[https://www.cnblogs.com/yikoulinux/p/17099867.html]]
+- [[https://doc.embedfire.com/linux/rk356x/quick_start/zh/latest/quick_start/isp/isp.html]]
+

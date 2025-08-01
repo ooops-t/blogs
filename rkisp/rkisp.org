@@ -209,7 +209,7 @@ Sensor 输出数据流给 ISP HW，ISP HW 再输出经过一系列图像处理�
 
 
 RKAIQ 为 Rockchip 提供的 ISP 参数调试工具。在 Rockchip 官方 SDK 中有提供。此处采用第三方开发板厂商上传的版本，
-下载链接为 =https://gitlab.com/khadas-edge2/external_camera_engine_rkaiq=
+下载链接为 [[https://gitlab.com/khadas-edge2/external_camera_engine_rkaiq][khadas-edge2/external_camera_engine_rkaiq]]
 
 ** 编译
 
@@ -230,6 +230,7 @@ RKAIQ 为 Rockchip 提供的 ISP 参数调试工具。在 Rockchip 官方 SDK �
 ** 运行测试
 
 RKAIQ 主要提供两个工具， ~rkaiq_tool_server~ 和 ~rkaiq_3A_server~ 。两个工具的使用方法参考官方相关文档。
+第三方上传文档[[https://dl.radxa.com/tools/windows/Rockchip_IQ_Tools_Guide_CN_v2.0.8.pdf][ Rockchip_IQ_Tools_Guide_CN_v2.0.8.pdf]]
 
 *** =rkaiq_tool_server=
 

@@ -47,6 +47,7 @@ Sensor 输出数据流给 ISP HW，ISP HW 再输出经过一系列图像处理�
 #+ATTR_ORG: :align center
 [[./imgs/rk3588-hardware.png]]
 
+
 ** 多摄像头软件通路
 
 单路硬件 ISP 最多支持 4 路复用，ISP 复用情况支持分辨率如下:
@@ -226,6 +227,7 @@ Sensor 输出数据流给 ISP HW，ISP HW 再输出经过一系列图像处理�
   # [   29.496732] rkisp rkisp0-vir0: clear unready subdev num: 0
 #+end_src
 
+
 * RKAIQ 相关工具
 
 
@@ -247,6 +249,7 @@ RKAIQ 为 Rockchip 提供的 ISP 参数调试工具。在 Rockchip 官方 SDK �
         -DRKAIQ_ENABLE_AF=ON \
         -B build .
 #+end_src
+
 
 ** 运行测试
 
@@ -270,4 +273,5 @@ RKAIQ 主要提供两个工具， ~rkaiq_tool_server~ 和 ~rkaiq_3A_server~ 。�
 - [[https://doc.embedfire.com/linux/rk356x/quick_start/zh/latest/quick_start/isp/isp.html]]
 - [[https://www.cnblogs.com/Tronlong818/p/18165948]]
 - [[https://zhuanlan.zhihu.com/p/634201418]]
-
+- [[https://wiki.t-firefly.com/en/ROC-RK3588S-PC/usage_camera.html]]
+  

@@ -1,0 +1,54 @@
+#+title: RK3588 GPU 使用教程
+#+author: taocheng
+#+date: <2025-08-01 Fri>
+
+* RK3588 GPU 简介
+
+RK3588 集成了嵌入式 ARM Mali G610 3D GPU，支持 OpenGLES 1.1、2.0、3.2，OpenCL 2.2 和 Vulkan 1.2。
+并带有 MMU 的特殊 2D 硬件引擎将最大限度的提高显示性能，并提供非常平稳的操作。
+
+* 设备端使能 GPU
+
+** 内核驱动
+
+#+begin_src shell
+  CONFIG_MALI_BIFROST=y
+  CONFIG_MALI_PLATFORM_NAME=rk
+  CONFIG_MALI_CSF_SUPPORT=y
+#+end_src
+
+** 设备树
+
+#+begin_src dts
+  gpu: gpu@fb000000 {
+  	compatible = "arm,mali-bifrost";
+  	...
+  };
+
+  &gpu {
+  	mali-supply = <&vdd_gpu_s0>;
+  	mem-supply = <&vdd_gpu_mem_s0>;
+  	status = "okay";
+  };
+#+end_src
+
+** 验证
+
+#+begin_src shell
+  dmesg | grep mali
+  # [   29.339559] mali fb000000.gpu: Kernel DDK version g21p0-01eac0
+  # ...
+  # [   29.431217] mali fb000000.gpu: Probed as mali0
+  # [17098.340510] mali fb000000.gpu: Loading Mali firmware 0x1010000
+  # [17098.342175] mali fb000000.gpu: Mali firmware git_sha: 935af7024ac4bfdc31651dccbabd3467e749c51b 
+
+#+end_src
+
+
+* 用户空间使用 GPU
+
+
+* 参考文档
+
+- [[https://zhuanlan.zhihu.com/p/589561302]]
+- [[https://ib.bsb.br/setting-up-gpu-drivers-on-rk3588/#bottom-of-page]]

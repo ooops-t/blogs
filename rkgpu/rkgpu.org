@@ -76,9 +76,19 @@ libmali 中包含 OpenGLES、OpenCL、Vulkan 等库的具体实现
 #+end_src
 
 
+* 查看 GPU 运行信息
+
+#+begin_src shell
+  cat /sys/devices/platform/fb000000.gpu/devfreq/fb000000.gpu/load
+  # 0@300000000Hz
+  # @ 前表示 GPU 使用率
+#+end_src
+
+
 * 参考文档
 
 - [[https://zhuanlan.zhihu.com/p/589561302]]
 - [[https://ib.bsb.br/setting-up-gpu-drivers-on-rk3588/#bottom-of-page]]
 - [[https://clehaxze.tw/gemlog/2023/06-17-setting-up-opencl-on-rk3588-using-libmali.gmi]]
 - [[https://www.cnblogs.com/arnoldlu/p/18175082]]
+- [[https://blog.csdn.net/Alon1787/article/details/142991574]]

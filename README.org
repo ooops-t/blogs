@@ -9,3 +9,5 @@
 
 * [[file:rkisp/rkisp.org][RKISP 使用教程]]
 
+* [[file:rkgpu/rkgpu.org][RK3588 GPU 使用教程]]
+

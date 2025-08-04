@@ -47,8 +47,37 @@ RK3588 集成了嵌入式 ARM Mali G610 3D GPU，支持 OpenGLES 1.1、2.0、3.2
 
 * 用户空间使用 GPU
 
+** 下载编译
+
+libmali 中包含 OpenGLES、OpenCL、Vulkan 等库的具体实现
+
+#+begin_src shell
+  git clone https://github.com/JeffyCN/mirrors.git # libmali 库
+  meson -Darch=aarch64 -Dgpu=valhall-g610 -Dversion=g24p0 -Dopencl-icd=false
+
+  # 编译 clinfo
+  git clone https://github.com/Oblomov/clinfo.git
+  # 编译之前需要修改 Makefile ，让其连接 libmali ，而不是连接 OpenCL
+  make 
+#+end_src
+
+** 验证
+
+#+begin_src shell
+  clinfo                                                                                                                                                                   
+  # Number of platforms                               1                                                                                                                                            
+  # arm_release_ver: g24p0-00eac0, rk_so_ver: 8                                                                                                                                                    
+  #   Platform Name                                   ARM Platform                                                                                                                                 
+  #   Platform Vendor                                 ARM                                                                                                                                          
+  #   Platform Version                                OpenCL 3.0 v1.g24p0-00eac0.071111a8920e863c7ed9b7ffed7fc78e                                                                                  
+  #   Platform Profile                                FULL_PROFILE                                                                                                                                 
+  #   Platform Extensions                             cl_khr_global_int32_base_atomics cl_khr_global_int32_extended_atomics cl_khr_local_int32_base_atomics cl_khr_local_int32_extended_atomics clr
+  #   Platform Extensions with Version                cl_khr_global_int32_base_atomics                                 0x400000 (1.0.0)          
+#+end_src
+
 
 * 参考文档
 
 - [[https://zhuanlan.zhihu.com/p/589561302]]
 - [[https://ib.bsb.br/setting-up-gpu-drivers-on-rk3588/#bottom-of-page]]
+- [[https://clehaxze.tw/gemlog/2023/06-17-setting-up-opencl-on-rk3588-using-libmali.gmi]]
